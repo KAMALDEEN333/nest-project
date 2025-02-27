@@ -1,0 +1,22 @@
+import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { AuthService } from './providers/auth.service';
+import { SignInDto } from 'src/DTO/signin-dto';
+import { RefreshTokenDto } from './dto/refresh-token-dto';
+
+@Controller('auth')
+export class AuthController {
+    constructor(private readonly authService:AuthService) {}
+
+    @Post('/sign-in')
+    @HttpCode(HttpStatus.OK)
+    public async signIn(@Body() signInDto:SignInDto) {
+        return this.authService.SignIn(signInDto)
+
+    }
+
+    @Get('/refresh-token')
+    public refreshToken(@Body() refreshTokenDto:RefreshTokenDto ) {
+        return this.authService.RefreshToken(refreshTokenDto)
+
+    }
+}

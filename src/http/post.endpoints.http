@@ -1,0 +1,43 @@
+{{
+const date = new Date()  
+exports.startDate = date.toString()
+exports.endDate = date.toString()
+}}
+//get request for post
+GET http://localhost:3000/posts
+?startDate={{startDate}}
+&endDate={{endDate}}
+&limit=2
+&page=1 
+
+
+PATCH http://localhost:3000/posts
+Content-Type: application/json
+{
+    "id": 3,
+    "title": "another request",
+    "postType": "series",
+    "content": "@Password123",
+    "metaOptions": {"metaValue": "{\"sidebar\": true}"},
+    "tags": [1,2]
+}
+
+
+POST http://localhost:3000/posts
+Content-Type : application/json
+{
+    "title" : "my practice",
+    "authorId" : 18,
+    "postType" : "page",
+    "PostStatus" : "review",
+    "content" : "Monday holiday practice",
+    "metaOptions": {
+        "metaValue": "{\"sidebar\": true}"
+    },
+        "tags" : [18]
+}
+
+
+DELETE http://localhost:3000/posts?id=6
+
+

@@ -1,0 +1,39 @@
+
+//get request for users
+GET http://localhost:3000/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjM3LCJlbWFpbCI6InRlc3RndWFyZEBnbWFpbC5jb20iLCJpYXQiOjE3MzcxMDU0NTUsImV4cCI6MTczNzEwOTA1NSwiYXVkIjoibG9jYWxob3N0OjMwMDAiLCJpc3MiOiJsb2NhbGhvc3Q6MzAwMCJ9.pWzg-Q9R8fS_FTWquIc2Y6sePrFMjSo5z5fkZcO60NA
+
+
+DELETE http://localhost:3000/users
+
+POST http://localhost:3000/users/many-users
+Content-Type: application/json
+
+{
+    "users" : [
+    {
+    "firstName": "creatingUser ",
+    "lastName" : "totest pagination",
+    "email": "pagination@gmail.com",
+    "password": "@Password34645"
+    }
+]
+
+}
+
+PATCH http://localhost:3000/users
+Content-Type: application/json
+{
+    "id" : 49,
+    "firstName" : "the fourty nineth user was edited ",
+    "lastName" : "testing",
+    "email" : "testingnewmailsss@gmail.com",
+    "password" : "@Password12345"
+}
+
+
+
+
+
+
+

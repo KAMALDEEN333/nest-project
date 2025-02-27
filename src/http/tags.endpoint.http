@@ -1,0 +1,10 @@
+
+DELETE  http://localhost:3000/tag?id=1
+
+POST  http://localhost:3000/tag
+Content-Type: application/json
+{
+    "name": "TYPE",
+    "slug" : "type-javescript",
+    "description": "Everything about typescript and java"
+}
