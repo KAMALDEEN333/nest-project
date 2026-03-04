@@ -37,7 +37,7 @@ import { MailProvider } from 'src/mail/providers/mail.provider';
           'Unable to process your request at the moment, Please try later',
           {
             description: 'Error connecting to your database',
-            cause: 'the user is using Glo network',
+            cause: 'the user is using has a badnetwork',
           },
         );
       }

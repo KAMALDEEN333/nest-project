@@ -1,47 +1,77 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config'; // Import ConfigModule and ConfigService
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { DataSource } from 'typeorm';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+
 import { UsersModule } from './users/users.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { PostModule } from './post/post.module';
 import { TagModule } from './tag/tag.module';
 import { MetaoptionModule } from './metaoption/metaoption.module';
-import { PostModule } from './post/post.module';
 import { AuthModule } from './auth/auth.module';
-import { DataSource } from 'typeorm';
-import { AccessTokenGuard } from './auth/guard/access-token/access-token.guard';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import jwtConfig from './auth/config/jwt.config';
-import { JwtModule } from '@nestjs/jwt';
-// import { AuthGuardGuard } from './auth/decorators/auth-guard/auth-guard.guard';
-import { DataResponseInterceptor } from './commom/interceptor/data-response/data-response.interceptor';
 import { MailModule } from './mail/mail.module';
-import { MailProvider } from './mail/providers/mail.provider';
 import { PaginationModule } from './commom/pagination.module';
 
+import jwtConfig from './auth/config/jwt.config';
+import { DataResponseInterceptor } from './commom/interceptor/data-response/data-response.interceptor';
+import { AccessTokenGuard } from './auth/guard/access-token/access-token.guard';
+import { MailProvider } from './mail/providers/mail.provider';
 
 @Module({
   imports: [
+    /**
+     * GLOBAL ENV CONFIG
+     * Local → .env
+     * Railway → Railway variables
+     */
     ConfigModule.forRoot({
-      isGlobal: true, 
-      envFilePath: ['.env.development'],
+      isGlobal: true,
     }),
+
+    /**
+     * DATABASE CONFIG (Railway + Local Compatible)
+     */
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule], 
-      inject: [ConfigService], 
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('POSTGRES_HOST'),
-        port: configService.get('POSTGRES_PORT'),
-        username: configService.get('POSTGRES_USER'),
-        password: configService.get('POSTGRES_PASSWORD'),
-        database:configService.get('POSTGRES_DB') ,
-        synchronize:configService.get('POSTGRES_SYNC'), // Used during development; ensure you do not lose your data
-        autoLoadEntities: configService.get('POSTGRES_LOAD'), // Automatically load entities instead of specifying them
-      }),
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const databaseUrl = config.get<string>('DATABASE_URL');
+
+        // ✅ If Railway provides DATABASE_URL → use it
+        if (databaseUrl) {
+          return {
+            type: 'postgres',
+            url: databaseUrl,
+            autoLoadEntities: true,
+            synchronize: false,
+            ssl: {
+              rejectUnauthorized: false,
+            },
+          };
+        }
+
+        // ✅ Local development fallback
+        return {
+          type: 'postgres',
+          host: config.get<string>('POSTGRES_HOST'),
+          port: Number(config.get('POSTGRES_PORT')),
+          username: config.get<string>('POSTGRES_USER'),
+          password: config.get<string>('POSTGRES_PASSWORD'),
+          database: config.get<string>('POSTGRES_DB'),
+          synchronize:
+            config.get<string>('POSTGRES_SYNC') === 'true',
+          autoLoadEntities:
+            config.get<string>('POSTGRES_LOAD') === 'true',
+        };
+      },
     }),
-     ConfigModule.forFeature(jwtConfig),
+
+    ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
+
     UsersModule,
     PostModule,
     TagModule,
@@ -50,18 +80,17 @@ import { PaginationModule } from './commom/pagination.module';
     MailModule,
     PaginationModule,
   ],
+
   controllers: [AppController],
-  providers: [AppService,
-    // {
-    //   provide:APP_GUARD,
-    //   useClass: AuthGuardGuard,
-    // },
+
+  providers: [
+    AppService,
     {
-      provide:APP_INTERCEPTOR,
+      provide: APP_INTERCEPTOR,
       useClass: DataResponseInterceptor,
     },
     AccessTokenGuard,
-    MailProvider
+    MailProvider,
   ],
 })
 export class AppModule {
